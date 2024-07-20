@@ -1,45 +1,49 @@
 import React, { useEffect, useState } from 'react'
 import AsideOwner from './AsideOwner'
 import { useForm } from 'react-hook-form'
-import { Global } from '../../helpers/Helpers'
 import NavBarOwner from './NavBarOwner'
 import '/public/css/propietarioEmpleado.css'
 import TodosLosUsuariosSockects from './TodosLosUsuariosSockects'
 import { Toaster , toast } from 'sonner'
+import { customAxios } from '../../../interceptors/axios.interceptor'
 
 const RegistroEmpleado = () => {
   const {register,handleSubmit,formState: {errors} , reset} = useForm({})
   const [allUsers ,setAllUsers]= useState([])
   async function allUsersInDb (){
-    const request = await fetch(Global.url + 'propietario/usuariosDisponibles',{
-      method: "GET",
+    const request = await customAxios.get('propietario/usuariosDisponibles',{
       headers: {
         "content-type":"application/json",
         "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials: true
     })
-    const data = await request.json()
-    if(data.status=="success"){
-      setAllUsers(data.usuarios)
+    if(request.data.status=="success"){
+      setAllUsers(request.data.usuarios)
     }
   }
   async function registrarEmpleado(e){
-    let rol = 3
-    const request = await fetch(Global.url + 'propietario/crearEmpleado/' + rol,{
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": localStorage.getItem("token")
-      },
-      body: JSON.stringify(e)
-    })
-    const data = await request.json()
-    if(data.status=="success"){
-      toast.success("Empleado almacenado correctamente")
-      reset()
-    }
-    if(data.status == "error"){
-      toast.error("No se pudo crear el usuario")
+    try {
+      const request = await customAxios.post('propietario/crearEmpleado',
+        {
+          email: e.email,
+          nombre: e.nombre,
+          password: e.password,
+          subRol: e.subRol
+        } ,
+        {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        withCredentials: true
+      })
+      if(request.data.status=="success"){
+        toast.success("Empleado almacenado correctamente")
+        reset()
+      }
+    } catch (error) {
+      toast.error(error.response.data.message)
       reset()
     }
   }

@@ -1,49 +1,49 @@
+/* eslint-disable no-unused-vars */
 import React from 'react'
 import Nav from './Nav'
 import { useForm } from 'react-hook-form'
-import { Global } from '../helpers/Helpers'
 import { Toaster , toast } from 'sonner'
 import io from 'socket.io-client'
-
+import { customAxios } from '../../interceptors/axios.interceptor'
 const Empleado = () => {
     const socket = io("/")
     const {register,handleSubmit,formState:{errors}} = useForm({})
 
     async function login(e){
-        let loginEmployee = e
-        const request = await fetch(Global.url + "empleado" ,{
-            method: "POST",
-            headers:{
-                "content-type": "application/json"
-            },
-            body: JSON.stringify(loginEmployee)
-        })
-        const data = await request.json()
-        if(data.status=="success"){
-            toast.success("Inico de sesión exitoso")
-            if(data.mesero){
-                localStorage.setItem("mesero", JSON.stringify(data.mesero))
-                socket.emit("login", (data.mesero.nombre))
-                localStorage.setItem("token", data.token)
-            }else if(data.domiciliario){
-                localStorage.setItem("domiciliario", JSON.stringify(data.domiciliario))
-                socket.emit("login", (data.domiciliario.nombre))
-                localStorage.setItem("token", data.token)
-            }else if(data.recepcionista){
-                localStorage.setItem("recepcionista", JSON.stringify(data.recepcionista))
-                socket.emit("login", (data.recepcionista.nombre))
-                localStorage.setItem("token", data.token)
-            }else if(data.cocinero){
-                localStorage.setItem("cocinero", JSON.stringify(data.cocinero))
-                socket.emit("login", (data.cocinero.nombre))
-                localStorage.setItem("token", data.token)
+        try {
+            const request = await customAxios.post("empleado" ,{email: e.email, password: e.password},{
+                headers:{
+                    "content-type": "application/json"
+                },
+                withCredentials: true
+            })
+            if(request.data.status=="success"){
+                toast.success("Inico de sesión exitoso")
+                if(request.data.mesero){
+                    localStorage.setItem("mesero", JSON.stringify(request.data.mesero))
+                    socket.emit("login", (request.data.mesero.nombre))
+                }
+                
+                if(request.data.domiciliario){
+                    localStorage.setItem("domiciliario", JSON.stringify(request.data.domiciliario))
+                    socket.emit("login", (request.data.domiciliario.nombre))
+                }
+
+                if(request.data.recepcionista){
+                    localStorage.setItem("recepcionista", JSON.stringify(request.data.recepcionista))
+                    socket.emit("login", (request.data.recepcionista.nombre))
+                }
+
+                if(request.data.cocinero){
+                    localStorage.setItem("cocinero", JSON.stringify(request.data.cocinero))
+                    socket.emit("login", (request.data.cocinero.nombre))
+                }
+                setTimeout(()=>{
+                    location.reload()
+                },2000)
             }
-            setTimeout(()=>{
-                location.reload()
-            },2000)
-        }
-        if(data.status=="error"){
-            toast.error("No se pudo iniciar sesión")
+        } catch (error) {
+            toast.error("No se pudo iniciar sesión, intenta nuevamente.")
         }
     }
   return (

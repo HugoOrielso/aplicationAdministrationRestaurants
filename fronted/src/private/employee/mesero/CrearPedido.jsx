@@ -1,12 +1,13 @@
-import React, { useEffect, useId, useState } from 'react'
-import { Global } from '../../../helpers/Helpers'
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from 'react'
 import NavEmpleado from './NavEmpleado'
 import '/public/css/crearPedido.css'
 import Productos from './Productos'
 import HeaderFiltros from './HeaderFiltros'
 import Filters from './Filters.jsx'
 import {Cart} from './Cart.jsx'
-import { Toaster } from 'sonner'
+import { toast, Toaster } from 'sonner'
+import { customAxios } from '../../../../interceptors/axios.interceptor.jsx'
 const CrearPedido = () => {
   const [productos, setProductos] = useState([])
   const [filters,setFiltersProduct]=useState({
@@ -47,17 +48,20 @@ const CrearPedido = () => {
     setCart([])
   }
   async function getProducts(){
-    const request = await fetch(Global.url + 'empleado',{
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": localStorage.getItem("token")
+    try {
+      const request = await customAxios.get('empleado',{
+        headers: {
+          "content-type": "application/json",
+        },
+        withCredentials: true
+      })
+      if(request.data.status== "success"){
+        setProductos(request.data.query)
       }
-    })
-    const data = await request.json()
-    if(data.status== "success"){
-      setProductos(data.query)
+    } catch (error) {
+      toast.error('Ocurrió un error obteniendo los productos')
     }
+
   }
   useEffect(()=>{
     getProducts()
@@ -74,7 +78,7 @@ const CrearPedido = () => {
           <Cart cart={cart} clearCart={clearCart} addToCart={addToCart}/>
         </section>
       </main>
-      <Toaster/>
+      <Toaster richColors/>
 
     </>
   )

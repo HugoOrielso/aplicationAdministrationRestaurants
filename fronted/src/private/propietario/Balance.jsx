@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import AsideOwner from './AsideOwner'
-import { Global } from '../../helpers/Helpers'
 import NavBarOwner from './NavBarOwner'
 import TableGastos from './tables/TableGastos'
 import TableIngresos from './tables/TableIngresos'
 import '/public/css/balance.css'
+import { customAxios } from '../../../interceptors/axios.interceptor'
 const Balance = () => {
   let totalGastos = 0
   let totalIngresos = 0
@@ -29,38 +29,38 @@ const Balance = () => {
   })
   balance = totalIngresos - totalGastos
   async function obtenerGastos(){
-    const request = await fetch(Global.url + "propietario/gastos", {
-        method: "GET",
+    const request = await customAxios.get("propietario/gastos", {
         headers: {
           "content-type": "application/json",
           "Authorization": localStorage.getItem("token")
-        }
+        },
+        withCredentials:true
     })
-    const data = await request.json()
-    if(data.status == "success"){
-      setGastos(data.gastos)
-      setGastosDeLaSemana(data.gastosSemana)
+    if(request.data.status == "success"){
+      setGastos(request.data.gastos)
+      setGastosDeLaSemana(request.data.gastosSemana)
     }
   }
   const obtenerGanascias = async ()=>{
-    const request = await fetch(Global.url + "propietario/ganancias", {
-      method: "GET",
+    const request = await customAxios.get("propietario/ganancias", {
       headers: {
         "content-type": "application/json",
         "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials:true
     })
-    const data = await request.json()
     
-    if(data.status=="success"){
-      setIngresos(data.rows)
-      setIngresosDeLaSemana(data.ingresosSemana)
+    if(request.data.status=="success"){
+      setIngresos(request.data.rows)
+      setIngresosDeLaSemana(request.data.ingresosSemana)
     }
   }
+
   useEffect(()=>{
     obtenerGastos()
     obtenerGanascias()
   },[])
+
   return (
     <>
     <NavBarOwner/>

@@ -1,44 +1,50 @@
 import React, { useEffect, useState } from 'react'
-import { Global } from '../../../helpers/Helpers'
 import io from 'socket.io-client'
 import {Toaster, toast} from 'sonner'
 import '/public/css/pedidosCocina.css'
 import NavCocinero from './NavCocinero'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
 const InicioCocinero = () => {
   const [isThereOrders, setIsThereOrders] = useState(false)
-  const audio = new Audio('../../../../public/assets/audios/pizzas.mp3'); 
+  const audio = new Audio('/public/assets/audios/pizzas.mp3'); 
+  const pedidosAgrupados = {};
+
   const playNotificationSound = () => {
     audio.play();
   };
   const socket = io("/")
   const [pedidosEnCurso , setPedidosEnCurso] = useState([])
   async function entregarPedido(id){
-    const request = await fetch(Global.url + 'empleado/pedidosEnCursoCocineros/' + id,{
-      method: "PUT",
+    const request = await customAxios.put('empleado/pedidosEnCursoCocineros/' + id,{
       headers: {
         "content-type": "application/json",
         "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials:true
     })
-    const data = await request.json()
-    if(data.status=="success"){
+
+    if(request.data.status=="success"){
       setTimeout(()=>{
         location.reload()
       },1000)
     }
   }
   async function pedidosEnCursoCocineros (){
-    const request = await fetch(Global.url + "empleado/pedidosEnCursoCocineros",{
-      method: "GET",
+    const request = await customAxios.get("empleado/pedidosEnCursoCocineros",{
       headers: {
         "content-type":"application/json",
         "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials:true
     })
-    const data = await request.json()
-    if(data.status == "success"){
-      setPedidosEnCurso(data.pedidos)
+    if(request.data.status == "success"){
+      setPedidosEnCurso(request.data.pedidos)
       setIsThereOrders(true)
+    }
+
+    if(request.data.status == 'vacío'){
+      toast.info(`No hay pedidos por hacer.`)
+
     }
   }
   socket.on("newOrderFromMesa", data=>{
@@ -67,7 +73,6 @@ const InicioCocinero = () => {
       location.reload()
     },2500)
   })
-  const pedidosAgrupados = {};
   if(isThereOrders){
     pedidosEnCurso.forEach((pedido) => {
       const pedidoId = pedido.pedido_id;
@@ -94,6 +99,7 @@ const InicioCocinero = () => {
         subcategoria: pedido.subcategoria,
       });
     });
+    toast.info(`Tienes ${Object.keys(pedidosAgrupados).length} pedidos por hacer.`)
   }
   const renderPedidos = () => {
     return Object.values(pedidosAgrupados).map((grupo) => (
@@ -137,12 +143,14 @@ const InicioCocinero = () => {
   },[])
   return (
     <>
-      <NavCocinero/>  
+      <NavCocinero/> 
+      <button onClick={playNotificationSound}>
+        Iniciar sonido</button> 
       <main>
         <section className='container-pedido-cocina'>
           {renderPedidos()}
         </section>
-        <Toaster />
+        <Toaster richColors/>
       </main>
     
     </>

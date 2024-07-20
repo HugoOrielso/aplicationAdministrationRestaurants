@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import { Global } from '../../helpers/Helpers'
+import { customAxios } from '../../../interceptors/axios.interceptor'
 
 const Curso = () => {
     const [isThereOrders, setIsThereOrders] = useState(false)
-      const [todosLosPedidos, setTodosLosPedidos] = useState()
+    const [todosLosPedidos, setTodosLosPedidos] = useState()
+    let pedidosAgrupados = {};
+
       async function allPedidosEnCurso(){
-        const request = await fetch(Global.url + 'empleado/allOrders',{
-            method: "GET",
+        const request = await customAxios.get('empleado/allOrders',{
             headers: {
                 "content-type":"application/json",
                 "Authorization": localStorage.getItem("token")
-            }
+            },
+            withCredentials: true
         })
-        const data = await request.json()
-        if(data.status=="success"){
-          setTodosLosPedidos(data.pedidos)
+        if(request.data.status=="success"){
+          setTodosLosPedidos(request.data.pedidos)
           setIsThereOrders(true)
         }
       }
-      const pedidosAgrupados = {};
+
       if(isThereOrders){
         todosLosPedidos?.forEach((pedido) => {
         const pedidoId = pedido.pedido_id;
@@ -46,7 +47,8 @@ const Curso = () => {
           subcategoria: pedido.subcategoria,
         });
       });
-    }
+      }
+      
     const renderPedidos = () => {
       return Object.values(pedidosAgrupados).map((grupo) => (
         <div key={grupo.id} className='pedido-cocina-owner'>

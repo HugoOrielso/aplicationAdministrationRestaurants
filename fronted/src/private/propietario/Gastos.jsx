@@ -3,36 +3,45 @@ import AsideOwner from './AsideOwner'
 import NavBarOwner from './NavBarOwner'
 import TableGastos from './tables/TableGastos'
 import ModalGastos from './ModalGastos'
-import { Global } from '../../helpers/Helpers'
 import '/public/css/balance.css'
-import PedidosEnCursoRecepcionista from '../employee/recepcionista/PedidosEnCursoRecepcionista'
+import { customAxios } from '../../../interceptors/axios.interceptor'
+import { toast, Toaster } from 'sonner'
+
 const Gastos = () => {
     const [gastos, setGastos] = useState([])
     const [gastosDeLaSemana,setGastosDeLaSemana]= useState([])
+    const [modalGasto,setModalGasto] = useState(false)
+    let totalSemana = 0
+    let totalGastos = 0
+
     async function obtenerGastos(){
-        const request = await fetch(Global.url + "propietario/gastos", {
-            method: "GET",
+        const request = await customAxios.get("propietario/gastos", {
             headers: {
                 "content-type": "application/json",
-                "Authorization": localStorage.getItem("token")
             }
         })
-        const data = await request.json()
-        if(data.status == "success"){
-            setGastos(data.gastos)
-            setGastosDeLaSemana(data.gastosSemana)
+
+        if(request.data.status == "success"){
+            setGastos(request.data.gastos)
+            setGastosDeLaSemana(request.data.gastosSemana)
+            acomodarGastos()
+        }
+
+        if(request.data.status == "vacío"){
+            toast.info("No hay gastos registrados para la fecha")
         }
     }
-    let totalSemana = 0
-    gastosDeLaSemana.forEach(gasto=>{
-        totalSemana = totalSemana + parseInt(gasto.monto)
-    })
-    const [modalGasto,setModalGasto] = useState(false)
-    let totalGastos =0
-    gastos.forEach(gasto=>{
-        gasto.monto = parseInt(gasto.monto)
-        totalGastos = totalGastos + gasto.monto
-    })
+
+    function acomodarGastos(){
+        gastosDeLaSemana.forEach(gasto=>{
+            totalSemana = totalSemana + parseInt(gasto.monto)
+        })
+        gastos.forEach(gasto=>{
+            gasto.monto = parseInt(gasto.monto)
+            totalGastos = totalGastos + gasto.monto
+        })
+    }
+
     function toggleModalGastos(){
         setModalGasto(true)
     }
@@ -43,9 +52,9 @@ const Gastos = () => {
   return (
     <>
     <NavBarOwner/>
-    <section className='wrapper'>
+    <section className='wrapper' >
         <AsideOwner/>
-        <main>
+        <main >
             <div className='header-gasto'>
                 <button className='add-product' onPointerDown={toggleModalGastos}>Registrar gastos</button>
                 <div className='fecha-ingresos-day'><span style={{color: "red"}}>Gastos totales del día:</span>  <strong>{totalGastos}</strong> </div>
@@ -58,6 +67,7 @@ const Gastos = () => {
 
         {modalGasto && <ModalGastos abrir={setModalGasto}/>}
     </section>
+    <Toaster richColors/>
     </>
   )
 }

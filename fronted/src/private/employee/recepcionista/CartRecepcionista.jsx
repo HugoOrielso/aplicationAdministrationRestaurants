@@ -1,9 +1,12 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react/react-in-jsx-scope */
 import '/public/css/cart.css'
 import { useId, useState } from 'react'
 import { Global } from '../../../helpers/Helpers.jsx'
 import io from 'socket.io-client'
 import { CartIcon, RemoveFromCar } from '../mesero/Icons.jsx'
 import RenderizarImagenes from '../mesero/RenderizarImagenes.jsx'
+import { customAxios } from '../../../../interceptors/axios.interceptor.jsx'
 function CartItem ({ categoria, price, title, quantity, addToCart }) {
   return (
     <li>
@@ -42,16 +45,18 @@ export function CartRecepcionista ({cart ,clearCart, addToCart}) {
     let obj = {
       direccion: direccionPedido
     }
-    const request = await fetch(Global.url + 'empleado/crearPedido/recepcion',{
+    const request = await customAxios.post(Global.url + 'empleado/crearPedido/recepcion',
+      {productos,direccion:direccionPedido,metodoDePago: metodoDePagoMesa, totalPrice: total, observaciones, vueltos},
+
+      {
       method: "POST",
       headers: {
         "content-type":"application/json",
         "Authorization": localStorage.getItem("token")
       },
-      body: JSON.stringify({productos,direccion:direccionPedido,metodoDePago: metodoDePagoMesa, totalPrice: total, observaciones, vueltos})
+      withCredentials: true
     })
-    const data = await request.json()
-    if(data.status == "success"){
+    if(request.data.status == "success"){
       socket.emit("newOrderFromRecepcion", obj)
       location.reload()
     }

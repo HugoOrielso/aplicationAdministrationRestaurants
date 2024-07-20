@@ -1,21 +1,25 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { Global } from '../../helpers/Helpers'
+import { customAxios } from '../../../interceptors/axios.interceptor'
+import { toast } from 'sonner'
 
 const ModalGastos = ({abrir}) => {
     const {register , handleSubmit, formState : {errors}, reset} = useForm({})
     async function nuevoGasto (e){
-        const request = await fetch(Global.url + "propietario/gastos", {
-            method: "POST",
+        const request = await customAxios.post("propietario/gastos",
+            {monto:e.monto, descripcion:e.descripcion},
+            {
             headers: {
                 "content-type": "application/json",
                 "Authorization": localStorage.getItem("token")
             },
-            body: JSON.stringify(e)
+            withCredentials:true
         })
-        const data = await request.json()
-        if(data.status=="success"){
-            location.reload()
+        if(request.data.status=="success"){
+            toast.success("Gasto agregado correctamente.")
+            // location.reload()
+            reset()
         }
     }
   return (
@@ -23,6 +27,7 @@ const ModalGastos = ({abrir}) => {
         <section className='modal-gasto'>
             <div className='modal'>
                 <h2 className='title-add-gasto'>Registrar gastos</h2>
+
                 <form onSubmit={handleSubmit(nuevoGasto)} className='form-gastos'>
                     <button onPointerDown={()=>{abrir(false)}} className='close-modal'>X</button>
                     <div className='gasto-div'>
@@ -34,7 +39,7 @@ const ModalGastos = ({abrir}) => {
                         <textarea name="descripcion" className={`textarea ${errors.descripcion ? "error-input":""}`} {...register("descripcion", {required: "El campo es obligatorio", pattern: {value: /^[a-zA-Z]+$/ , message: "Sólo se aceptan letras"} })} placeholder='Descripción'/>
                     </div>
                     <div className='container-botones-modal-gasto'>
-                        <button className='btn-agregar'>Registrar</button>
+                        <button type='submit' className='btn-agregar'>Registrar</button>
                     </div>
                 </form>
             </div>
@@ -42,5 +47,7 @@ const ModalGastos = ({abrir}) => {
     </>
   )
 }
+
+
 
 export default ModalGastos

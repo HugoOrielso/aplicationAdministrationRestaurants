@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import NavBarOwner from './NavBarOwner'
 import AsideOwner from './AsideOwner'
 import {  useParams } from 'react-router-dom'
-import { Global } from '../../helpers/Helpers'
 import '/public/css/single.css'
+import '/public/css/transitionView.css'
 import { SimpleLineChat } from './SimpleLineChart'
 import ImagenesEdit from './ImagesEdit'
 import { useForm } from 'react-hook-form'
 import { serealizeForm } from '../../helpers/SerealizeForm'
+import {  customAxios } from '../../../interceptors/axios.interceptor'
 
 const EditarProducto = () => {
   const [producto,setProducto] = useState()
@@ -15,31 +16,27 @@ const EditarProducto = () => {
   
   const [countSales,setCountSales]= useState([])
   const {id} = useParams()
+
   async function countSalesFunction(){
-    const request = await fetch(Global.url + 'propietario/producto/' + id,{
-      method: "GET",
+    const request = await customAxios.get('propietario/producto/' + id,{
       headers: {
         "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredential:true
     })
-    const data = await request.json()
-    if (data.status=="success") {
-      setCountSales(data.row)
+    if (request.data.status=="success") {
+      setCountSales(request.data.row)
     }
   }
 
   async function obtenerSingleProduct(){
-    const request = await fetch(Global.url + 'propietario/singleProduc/' + id,{
-      method: "GET",
+    const request = await customAxios.get('propietario/singleProduc/' + id,{
       headers: {
         "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
       }
     })
-    const data = await request.json()
-    if (data.status=="success") {
-      setProducto(data.row)
+    if (request.data.status=="success") {
+      setProducto(request.data.row)
       countSalesFunction()
     }
   }
@@ -47,17 +44,14 @@ const EditarProducto = () => {
   async function editarProducto(e){
     e.preventDefault()
     let newDataProduct = serealizeForm(e.target)
-    const request = await fetch(Global.url + 'propietario/producto/' + id, {
-      method: "PUT",
+    const request = await customAxios.put('propietario/producto/' + id, {newDataProduct}, {
       headers: {
         "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
       },
-      body: JSON.stringify(newDataProduct)
+      withCredentials: true
     })
 
-    const data = await request.json()
-    if(data.status=="success"){{
+    if(request.data.status=="success"){{
       location.reload()
     }}
   }
@@ -74,13 +68,13 @@ const EditarProducto = () => {
             <div className='view'>
               <div className="topInfo">
                 <h1 style={{color:"red"}}>{producto?.[0]?.nombre}</h1>
-                <ImagenesEdit categoria={producto?.[0]?.categoria || ''}/>
+                <ImagenesEdit categoria={producto?.[0]?.categoria || ''} id={id}/>
               </div>
               <div className='container-formulario-edit-product'>
                 <form action="" className='formulario-editar' onSubmit={editarProducto}>
                   <div className='item-editar'>
                     <label htmlFor="nombre" className='label-edicion'>Nombre</label>
-                    <input type="text" id='nombre' defaultValue={producto?.[0]?.nombre || ''} className='input-form-edicion' {...register("nombre")} />
+                    <input type="text" id='nombre' style={{viewTransitionName:`Producto ${producto?.[0]?.nombre} title` }} data-name={`Producto ${producto?.[0]?.nombre} title`} defaultValue={producto?.[0]?.nombre || ''} className='input-form-edicion' {...register("nombre")} />
                   </div>
                   <div className='item-editar'>
                     <label htmlFor="precio" className='label-edicion'>Precio</label>

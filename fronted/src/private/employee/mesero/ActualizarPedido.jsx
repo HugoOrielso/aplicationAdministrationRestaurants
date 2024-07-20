@@ -1,5 +1,5 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react'
-import { Global } from '../../../helpers/Helpers'
 import { useParams } from 'react-router-dom'
 import NavEmpleado from './NavEmpleado'
 import HeaderFiltros from './HeaderFiltros'
@@ -9,6 +9,7 @@ import ProductosActualizar from './ProductosActualizar'
 import { CartActualizar } from './CartActualizar'
 import io from 'socket.io-client'
 import { Toaster, toast } from 'sonner'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
 
 const ActualizarPedido = () => {
   const {mesaOcupada}=useParams()
@@ -20,6 +21,7 @@ const ActualizarPedido = () => {
   const [detallesPedido, setDetallePedido]=useState([])
   const [metodoDePago,setMetodoDePago]=useState("")
   const [productos, setProductos] = useState([])
+  const [estadoMesa, setEstadoMesa] = useState('')
   const [cart,setCart]=useState([])
   const [filters,setFiltersProduct]=useState({
     category: "all",
@@ -69,48 +71,59 @@ const ActualizarPedido = () => {
   }
   let total = 0
   async function obtenerPedidoEnCurso(){
-    const request = await fetch(Global.url + "empleado/obtenerPedido/" + mesaOcupada,{
-      method: "GET",
-      headers: {
-        "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
+    try {
+      const request = await customAxios.get("empleado/obtenerPedido/" + mesaOcupada,{
+        headers: {
+          "content-type":"application/json",
+        },
+        withCredentials:true
+      })
+      if(request.data.status=="success"){ 
+        setEstadoMesa(request.data.estado)
+        setDetallePedido(request.data.detalles_pedido)
+        setMetodoDePago(request.data.metodoDePago)
       }
-    })
-    const data = await request.json()
-    console.log(data);
-    if(data.status=="success"){
-      setDetallePedido(data.detalles_pedido)
-      setMetodoDePago(data.metodoDePago)
+    } catch (error) {
+      toast.error('Ocurrió un error obteniendo la data del pedido.')
     }
+
   }
   
   async function getProducts(){
-    const request = await fetch(Global.url + 'empleado',{
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": localStorage.getItem("token")
+    try {
+      const request = await customAxios.get('empleado',{
+        headers: {
+          "content-type": "application/json",
+        },
+        withCredentials:true
+      })
+      if(request.data.status== "success"){
+        setProductos(request.data.query)
       }
-    })
-    const data = await request.json()
-    if(data.status== "success"){
-      setProductos(data.query)
+    } catch (error) {
+      toast.error('Ocurrió un error obteniendo el pedido')
     }
+
   }
   async function finalizarOden(){
-    const request = await fetch(Global.url + 'empleado/finalizar/' + mesaOcupada,{
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": localStorage.getItem("token")
+    try {
+      const request = await customAxios.post('empleado/finalizar/' + mesaOcupada,{
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        withCredentials: true
+      })
+      if(request.data.status=="success"){
+        toast.success('Pedido finalizado correctamente')
+        setTimeout(()=>{
+          location.href = "/inicioMesero"
+        },1000)
       }
-    })
-    const data = await request.json()
-    if(data.status=="success"){
-      setTimeout(()=>{
-        location.href = "/inicioMesero"
-      },1000)
+    } catch (error) {
+      toast.error('No se pudo finalizar la orden')
     }
+
   }
   useEffect(()=>{
     obtenerPedidoEnCurso()
@@ -155,7 +168,10 @@ const ActualizarPedido = () => {
                 </div>
             </footer>
             <div className='div-botones-acciones'>
-              <button className='finalizar-orden' onPointerDown={finalizarOden}>Finalizar orden</button>
+              {
+                estadoMesa == 'en mesa' &&
+                <button className='finalizar-orden' onPointerDown={finalizarOden}>Finalizar orden</button>
+              }
             </div>
           </div>
         </section>
@@ -167,7 +183,7 @@ const ActualizarPedido = () => {
           <CartActualizar cart={cart} clearCart={clearCart} addToCart={addToCart}/>
         </section>
       </main>
-      <Toaster/>
+      <Toaster richColors/>
     </>
   )
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -25,7 +26,6 @@ export default function NestedModal() {
           <p id="parent-modal-description">
             Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
           </p>
-          <ChildModal />
         </Box>
       </Modal>
     </div>

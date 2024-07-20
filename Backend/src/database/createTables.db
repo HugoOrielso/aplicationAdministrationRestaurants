@@ -1,4 +1,14 @@
+CREATE DATABASE pizzeria_venecia;
+
 USE pizzeria_venecia;
+
+CREATE TABLE IF NOT EXISTS propietario(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(50) NOT NULL,
+    email VARCHAR(70) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    rol INT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS usuario(
 	id INT AUTO_INCREMENT PRIMARY KEY,
@@ -59,19 +69,7 @@ CREATE TABLE IF NOT EXISTS mesas(
 )
 
 
-INSERT INTO mesas(mesa,ocupada) VALUES (1,1)
+INSERT INTO mesas(mesa,ocupada) VALUES (1,1), (2,1), (3,1), (4,1), (5,1);
 
-USE pizzeria_venecia;
 
-INSERT INTO pedidos ( tipo, mesa, estado) VALUES
-( 'mesa', 1, 'en preparacion');
 
--- Obtener el ID del último pedido insertado
-SET @ultimo_pedido_id = LAST_INSERT_ID();
-
-INSERT INTO productos (nombre, precio, categoria) VALUES ("Hamburguesa sencilla", 20000, "Hamburguesas"),("Perro sencillo", 10000, "Perros"),("Pesis 400ml", 5000, "Bebidas"),("Pizza pollo champiñones", 28000, "Pizzas"),("Hamburguesa especial", 25000, "Hamburguesas"),("Hamburguesa doble carne", 22000, "Hamburguesas");
-
--- Insertar detalles del pedido
-INSERT INTO detalles_pedido (id, producto_id, cantidad, precio_unitario, total) VALUES
-(@ultimo_pedido_id , (SELECT producto_id FROM productos WHERE nombre = 'Hamburguesa sencilla'), 2, (SELECT precio FROM productos WHERE nombre = 'Hamburguesa sencilla'), 2 * (SELECT precio FROM productos WHERE nombre = 'Hamburguesa sencilla')),
-(@ultimo_pedido_id , (SELECT producto_id FROM productos WHERE nombre = 'Pepsi 400ml'), 1, (SELECT precio FROM productos WHERE nombre = 'Pepsi 400ml'), 1 * (SELECT precio FROM productos WHERE nombre = 'Hamburguesa sencilla'));

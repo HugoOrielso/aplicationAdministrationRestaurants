@@ -1,9 +1,10 @@
 .add{
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   position: absolute;
   top: 0;
   left: 0;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.724);
   display: flex;
   align-items: center;

@@ -1,37 +1,35 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Nav from './Nav'
 import {useForm} from 'react-hook-form'
 import'../../public/css/inicio.css'
-import { Global } from '../helpers/Helpers'
 import { Toaster, toast } from 'sonner'
+import { customAxios } from '../../interceptors/axios.interceptor'
 const Inicio = () => {
+
   const {register ,handleSubmit , formState: {errors}} = useForm({})
-  const [idUser , setIdUser] = useState("")
-  async function login(e){
-    let obj = {
-      email: e.email,
-      password: e.password
-    }
-    const request = await fetch(Global.url + "propietario",{
-      method: "POST",
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify(obj)
-    })
-    const data = await request.json()
-    if(data.status=="success"){
-      toast.success("Inicio de sesión exitoso")
-      localStorage.setItem("propietario", JSON.stringify(data.propietario))
-      localStorage.setItem("token", data.token)
-      setTimeout(()=>{
-        location.reload()
-      },2000)
-    }
-    if(data.status=="error"){
-      toast.error("No se pudo iniciar sesión")
+  async function login(e) {
+    try {
+      const request = await customAxios.post("propietario",{email:e.email, password: e.password}, {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        withCredentials: true 
+      });
+  
+      if (request.data.status === "success") {
+        toast.success("Inicio de sesión exitoso");
+        localStorage.setItem("propietario", JSON.stringify(request.data.propietario));
+        setTimeout(() => {
+          location.reload()
+        }, 2000);
+        return;
+      }
+    } catch (error) {
+      toast.error("No se pudo iniciar sesión");
     }
   }
+  
+
 
   return (
     <>

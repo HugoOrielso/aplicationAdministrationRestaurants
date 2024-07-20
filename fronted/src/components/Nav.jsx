@@ -9,12 +9,11 @@ const Nav = () => {
 
     const toggleMenu = () =>{
         setDesplegar(!desplegar)
-        console.log(desplegar);
     }
 
   return (
-    <header>
-    <nav className='nav'>
+    <header >
+    <nav className='nav '>
         <div className='container-logo-list'>
             <button className='button-logo' onPointerDown={toggleMenu}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fillRule="currentColor" className="list-svg" viewBox="0 0 16 16">

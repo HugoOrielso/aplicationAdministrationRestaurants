@@ -1,29 +1,28 @@
-import jwt from 'jwt-simple'
 import moment from 'moment'
-import { secret } from '../services/jwt.js'
+import { tokenSecret } from '../config.js';
+import jwt from 'jsonwebtoken'
 
-export const auth = (req,res,next)=>{
-    if(!req.headers.authorization){
-        return res.status(403).json({
-            status: "error",
-            message: "La petición no tiene la cabecera de autenticación"
-        })
+export const auth = (req, res, next) => {
+  const {refresh_token, acces_token} = req.cookies
+  
+  if (!refresh_token || !acces_token) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'No estás autorizado a realizar esta petición'
+    })
+  }
+  const token = acces_token.replace(/['"]+/g, '')
+  try {
+    const payload = jwt.decode(token, tokenSecret)
+    if (payload.exp <= moment().unix()) {
+      throw new Error('Token vencido')
     }
-    let token = req.headers.authorization.replace(/['"]+/g,"")
-    try {
-        let payload = jwt.decode(token,secret)
-        if(payload.exp<= moment().unix()){
-            return res.status(401).json({
-                status: "error",
-                message: "Token expirado"
-            })
-        }
-        req.user = payload        
-    } catch (error) {
-        return res.status(404).json({
-            status: "error",
-            message: "Token inválido"
-        })
-    }
-    next()
+    req.user = payload
+  } catch (error) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'Token inválido'
+    })
+  }
+  next()
 }

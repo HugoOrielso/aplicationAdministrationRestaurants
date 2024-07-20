@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import NavRecepcionista from './NavRecepcionista'
-import { Global } from '../../../helpers/Helpers'
 import '/public/css/recepcionista.css'
 import { Link } from 'react-router-dom'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
 const PedidosEnCursoRecepcionista = () => {
       const [isThereOrders, setIsThereOrders] = useState(false)
       const [todosLosPedidos, setTodosLosPedidos] = useState()
       async function allPedidosEnCurso(){
-        const request = await fetch(Global.url + 'empleado/allOrders',{
-            method: "GET",
+        const request = await customAxios.get('empleado/allOrders',{
             headers: {
                 "content-type":"application/json",
                 "Authorization": localStorage.getItem("token")
-            }
+            },
+            withCredentials:true
         })
-        const data = await request.json()
-        if(data.status=="success"){
-          setTodosLosPedidos(data.pedidos)
+        if(request.data.status=="success"){
+          setTodosLosPedidos(request.data.pedidos)
           setIsThereOrders(true)
         }
       }

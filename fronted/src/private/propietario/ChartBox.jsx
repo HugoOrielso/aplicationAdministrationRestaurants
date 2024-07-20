@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import {ResponsiveContainer , Tooltip ,XAxis , BarChart, CartesianGrid , YAxis, Legend , Bar} from 'recharts' 
 import '/public/css/chart.css'
@@ -7,6 +8,7 @@ const ChartBox = ({allPedidos}) => {
   allPedidos.forEach(element => {
     data.push(element)
   });
+  
   const fechaActual = new Date()
   const year = fechaActual.getFullYear()
   const month = fechaActual.getMonth() + 1

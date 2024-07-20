@@ -1,5 +1,9 @@
+/* eslint-disable no-undef */
+/* eslint-disable react/no-unknown-property */
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React, { useState } from 'react'
-import {Table, TableContainer, TableHead, TableCell, TableBody, TableRow, Modal, TextField, Button, Box } from '@material-ui/core'
+import {Table, TableContainer, TableHead, TableCell, TableBody, TableRow, Modal, TextField, Button } from '@material-ui/core'
 import {makeStyles} from '@material-ui/core/styles'
 import {Edit, Delete} from '@mui/icons-material'
 import { useForm } from 'react-hook-form';
@@ -46,7 +50,6 @@ const TableInventario = ({inventario}) => {
             body: JSON.stringify(obj)
         })
         const data = await request.json()
-        console.log(data);
     }
       const bodyInsertar=(
         <div className={styles.modal}>

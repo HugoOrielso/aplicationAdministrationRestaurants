@@ -1,23 +1,28 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react'
 import NavRecepcionista from './NavRecepcionista'
 import TableReporteDomicilios from './TableReporteDomicilios'
-import { Global } from '../../../helpers/Helpers'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
+import { toast } from 'sonner'
 
 const ReporteDomicilios = () => {
     const [datosReportados,setDatosReportados]= useState([])
     async function ajusteCaja(){
-        const request = await fetch(Global.url + 'empleado/reporte/domicilios',{
-            method: "GET",
-            headers: {
-                "content-type":"application/json",
-                "Authorization": localStorage.getItem("token")
+        try {
+            const request = await customAxios.get('empleado/reporte/domicilios',{
+                headers: {
+                    "content-type":"application/json",
+                    "Authorization": localStorage.getItem("token")
+                },
+                withCredentials: true
+            })
+            if(request.data.status=="success"){
+                setDatosReportados(request.data.rows)
             }
-        })
-        const data = await request.json()
-        if(data.status=="success"){
-            setDatosReportados(data.rows)
-            setIsThereData(true)
+        } catch (error) {
+            toast.error("No se pudo obtenerr los datos.")
         }
+
     }
     useEffect(()=>{
         ajusteCaja()

@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import NavEmpleado from '../mesero/NavEmpleado'
 import ProductosRecepcionista from './ProductosRecepcionista'
 import { CartRecepcionista } from './CartRecepcionista'
-import  io  from 'socket.io-client'
 import Filters from '../mesero/Filters'
 import HeaderFiltros from '../mesero/HeaderFiltros'
-import { Global } from '../../../helpers/Helpers'
 import NavRecepcionista from './NavRecepcionista'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
 
 const InicioRecepcionista = () => {
-  const socket = io()
   const [productos, setProductos] = useState([])
   const [filters,setFiltersProduct]=useState({
     category: "all",
@@ -49,16 +46,15 @@ const InicioRecepcionista = () => {
     setCart([])
   }
   async function getProducts(){
-    const request = await fetch(Global.url + 'empleado',{
-      method: "GET",
+    const request = await customAxios('empleado',{
       headers: {
         "content-type": "application/json",
         "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials: true
     })
-    const data = await request.json()
-    if(data.status== "success"){
-      setProductos(data.query)
+    if(request.data.status== "success"){
+      setProductos(request.data.query)
     }
   }
   useEffect(()=>{

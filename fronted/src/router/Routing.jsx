@@ -1,10 +1,8 @@
 import React from 'react'
 import { BrowserRouter , Routes , Route } from 'react-router-dom'
 import Inicio from '../components/Inicio'
-import Mesas from '../components/Mesas'
 import { useLocalStorage } from 'react-use'
 import ProteccionPublica from '../utils/ProteccionPublica'
-import AdminInicio from '../private/admin/AdminInicio'
 import Administracion from '../private/propietario/Administracion'
 import PropietarioProteccion from '../utils/PropietarioProteccion'
 import Gastos from '../private/propietario/Gastos'
@@ -33,11 +31,11 @@ import ReporteDomicilios from '../private/employee/recepcionista/ReporteDomicili
 import RevisarPedidosEnCurso from '../private/propietario/RevisarPedidosEnCuso'
 
 const Routing = () => {
-  const [propietario , setPropietario ] = useLocalStorage("propietario")
-  const [mesero , setMesero ] = useLocalStorage("mesero")
-  const [recepcionista, setRecepcionista ] = useLocalStorage("recepcionista")
-  const [cocinero, setCocinero ] = useLocalStorage("cocinero")
-  const [domiciliario, setDomiciliario ] = useLocalStorage("domiciliario")
+  const [ propietario ] = useLocalStorage("propietario")
+  const [ mesero ] = useLocalStorage("mesero")
+  const [ recepcionista ] = useLocalStorage("recepcionista")
+  const [ cocinero ] = useLocalStorage("cocinero")
+  const [ domiciliario ] = useLocalStorage("domiciliario")
   return (
     <BrowserRouter>
       <Routes>

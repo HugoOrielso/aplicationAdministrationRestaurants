@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { Balance, Box, Gastos, Ingresos, Users } from './IconsNav'
 import AlignVerticalCenterIcon from '@mui/icons-material/AlignVerticalCenter';
 import DescriptionIcon from '@mui/icons-material/Description';
+import '/public/css/AsideOwner.css'
 const AsideOwner = () => {
   return (
     <aside className='aside-owner'>

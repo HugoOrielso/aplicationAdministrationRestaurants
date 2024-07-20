@@ -1,6 +1,6 @@
-import React from 'react'
+/* eslint-disable react/react-in-jsx-scope */
 import { NavLink } from 'react-router-dom'
-import '/public/css/NavRecepcionistas.css'
+import '/public/css/navRecepcionistas.css'
 const NavRecepcionista = () => {
     function cerrarSesion (){
         localStorage.clear()
@@ -8,8 +8,8 @@ const NavRecepcionista = () => {
             location.reload()
         },1000)
     }
-  return (
-        <nav className='nav-recepcionista'>
+    return (
+        <nav className='nav-recepcionista noPrint'>
             <ul className='ul-recepcionista'>
                 <li className='li-recepcionista'>
                     <NavLink to="/inicioRecepcionistas" className="a-recepcionista">Inicio</NavLink>
@@ -26,7 +26,7 @@ const NavRecepcionista = () => {
             </ul>
             <button className='buton-cerrar-sesion' onPointerDown={cerrarSesion}>Cerrar sesión</button>
         </nav>
-  )
+    )
 }
 
 export default NavRecepcionista

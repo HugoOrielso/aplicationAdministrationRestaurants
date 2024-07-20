@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import MUIDataTable from 'mui-datatables';
 import React from 'react'
 const TableReporteDomicilios = ({data}) => {

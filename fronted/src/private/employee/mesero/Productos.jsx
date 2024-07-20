@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import RenderizarImagenes from './RenderizarImagenes'
 import { AddToCart, RemoveIcon } from './Icons'
@@ -9,7 +10,7 @@ const Productos = ({productos, addCart, cart, removeFromCart}) => {
     return (
       <div className='productos-venecia'>
             <ul>
-                {productos.map((producto,i)=> {
+                {productos.map((producto)=> {
                   const isProductInCart = checkProductInCart(producto)
                   return(
                       <li key={producto.producto_id}>

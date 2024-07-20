@@ -1,36 +1,37 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import '/public/css/Agrega.css'
-import { Global } from '../../helpers/Helpers';
 import { Toaster , toast } from 'sonner'
-
+import { customAxios } from '../../../interceptors/axios.interceptor';
 const Agregar = ({setOpen}) => {
     const {register, handleSubmit, formState:{errors}, reset} = useForm({})
 
     async function registrarProducto(e){
-        let obj = {
-            nombre: e.nombre,
-            precio: e.precio,
-            categoria: e.categoria,
-            subcategoria: e.subcategoria
+        try {
+            const request = await customAxios.post('propietario/productos',
+                {
+                    nombre: e.nombre,
+                    precio: e.precio,
+                    categoria: e.categoria,
+                    subcategoria: e.subcategoria
+                },
+                {
+                headers: {
+                    "content-type":"application/json",
+                },
+                withCredentials:true
+            })
+            if(request.data.status=="success"){
+                toast.success("Producto agregado correctamente")
+                reset()
+            }
+        } catch (error) {
+            toast.error("No se almacenó el producto, intenta más tarde.")
         }
-        const request = await fetch(Global.url + 'propietario/productos',{
-            method: "POST",
-            headers: {
-                "content-type":"application/json",
-                "Authorization": localStorage.getItem("token")
-            },
-            body: JSON.stringify(obj)
-        })
-        const data = await request.json()
-        if(data.status=="success"){
-            toast.success("Producto agregado correctamente")
-            reset()
-        }
-        if(data.status=="error"){
-            toast.error("Error al almacenar el producto")
-            reset()  
-        }
+
+
     }
     return (
         <div className='add'>
@@ -57,6 +58,7 @@ const Agregar = ({setOpen}) => {
                 <button className='btn-agregar' type='submit'>Registrar</button>
             </form>
         </div>
+        <Toaster richColors/>
     </div>
   )
 }

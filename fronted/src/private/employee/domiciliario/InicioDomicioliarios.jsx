@@ -1,43 +1,49 @@
 import React, { useEffect, useState } from 'react'
 import '/public/css/domiciliarios.css'
-import { Global } from '../../../helpers/Helpers'
 import NavDomiciliarios from './NavDomiciliarios'
 import io from 'socket.io-client'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
+import { toast, Toaster } from 'sonner'
 const InicioDomicioliarios = () => {
     const socket = io("/")
     const [arrayDomicilios,setArrayDomicilio]= useState([])
     const [isThereOrders, setIsThereOrders] = useState(false)
+    const pedidosAgrupados = {};
+
     let user = JSON.parse(localStorage.getItem("domiciliario"))
     async function takeOrder (id){
-      const request = await fetch(Global.url + 'empleado/domicilios' ,{
-          method: "POST",
+      const request = await customAxios.post('empleado/domicilios',{user, idPedido: id} ,{
           headers: {
               "content-type":"application/json",
               "Authorization":localStorage.getItem("token")
           },
-          body: JSON.stringify({user, idPedido: id})
+          withCredentials: true
       })
-      const data = await request.json()
-      if(data.status=="success"){
-          location.reload()
+      if(request.data.status=="success"){
+          toast.info("Pedido tomado correctamente")
+          setTimeout(()=>{
+            location.reload()
+          },1000)
       }
     }
     async function domiciliosEnCurso(){
-      const request = await fetch(Global.url + 'empleado/domicilios', {
-          method: "GET",
+      const request = await customAxios.get('empleado/domicilios', {
           headers: {
               "content-type":"application/json",
               "Authorization": localStorage.getItem("token")
-          }
+          },
+          withCredentials: true
       })
-      const data = await request.json()
-      if(data.status=="success"){
-          setArrayDomicilio(data.domicilios)
-          setIsThereOrders(true)
+      if(request.data.status=="success"){
+        setArrayDomicilio(request.data.domicilios)
+        setIsThereOrders(true)
+      }
+      if(request.data.status === 'vacío'){
+        toast.info("No hay domicilios en el momento.")
       }
     }
-    const pedidosAgrupados = {};
-    if(isThereOrders){
+
+      if(isThereOrders){
         arrayDomicilios.forEach((pedido) => {
           const pedidoId = pedido.pedido_id;
           if (!pedidosAgrupados[pedidoId]) {
@@ -62,7 +68,9 @@ const InicioDomicioliarios = () => {
             subcategoria: pedido.subcategoria,
           });
         });
+        toast.success(`Hay ${Object.keys(pedidosAgrupados).length } domicilios disponibles.`)
     }
+
     const renderPedidos = () => {
         return Object.values(pedidosAgrupados).map((grupo) => (
           <div key={grupo.id} className='domicilio-en-ruta'>
@@ -103,10 +111,17 @@ const InicioDomicioliarios = () => {
           <NavDomiciliarios/>
       </header>
       <main style={{overflow: 'hidden'}}>
+        {!isThereOrders ? <>
+          <p>
+            Sin pedidos.
+          </p>
+        </>:
           <section className='grilla-domicilios'>
               {renderPedidos()}
           </section>
+        }
       </main>
+      <Toaster richColors/>
     </>
   )
 }

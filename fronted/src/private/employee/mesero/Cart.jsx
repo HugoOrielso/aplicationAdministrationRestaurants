@@ -1,10 +1,14 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
+import React from 'react'
 import '/public/css/cart.css'
 import { useId, useState } from 'react'
 import { CartIcon, RemoveFromCar } from './Icons.jsx'
 import RenderizarImagenes from './RenderizarImagenes.jsx'
-import { Global } from '../../../helpers/Helpers.jsx'
 import { useParams } from 'react-router-dom'
 import io from 'socket.io-client'
+import { Toaster, toast } from 'sonner'
+import { customAxios } from '../../../../interceptors/axios.interceptor.jsx'
 
 function CartItem ({ categoria, price, title, quantity, addToCart }) {
   return (
@@ -36,22 +40,26 @@ export function Cart ({cart ,clearCart, addToCart}) {
     setObservaciones(e.target.value)
   }
   async function crearPedido(productos){
-    let obj = {
-      mesa:numeroDeMesa
+    try {
+      const request = await customAxios.post('empleado/crearPedido',
+        {productos,numeroDeMesa: numeroDeMesa,metodoDePago: metodoDePagoMesa, totalPrice: total, observaciones, mesero: mesero.nombre },
+        {
+        headers: {
+          "content-type":"application/json",
+        },
+        withCredentials:true
+      })
+      if(request.data.status == "success"){
+        toast.success("Pedido creado exitosamente.")
+        socket.emit("newOrderFromMesa", {mesa:numeroDeMesa})
+        setTimeout(()=>{
+          location.href = "/inicioMesero"
+        },2000)
+      }
+    } catch (error) {
+      toast.error("No se pudo crear el pedido intenta más tarde.")
     }
-    const request = await fetch(Global.url + 'empleado/crearPedido',{
-      method: "POST",
-      headers: {
-        "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
-      },
-      body: JSON.stringify({productos,numeroDeMesa: numeroDeMesa,metodoDePago: metodoDePagoMesa, totalPrice: total, observaciones, mesero: mesero.nombre })
-    })
-    const data = await request.json()
-    if(data.status == "success"){
-      socket.emit("newOrderFromMesa", obj)
-      location.href = "/inicioMesero"
-    }
+
   }
   const handleMetodoDepago = (e)=>{
     setMetodoDePagoMesa(e.target.value);
@@ -104,9 +112,9 @@ export function Cart ({cart ,clearCart, addToCart}) {
             <button onPointerDown={()=>crearPedido(cart)} className='create-order'>
               Pagar 
             </button>
-
           </div>
       </aside>
+      <Toaster richColors />
     </>
   )
 }

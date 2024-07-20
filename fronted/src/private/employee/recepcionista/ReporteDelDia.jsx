@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import NavRecepcionista from './NavRecepcionista'
-import { Global } from '../../../helpers/Helpers'
 import TableReporte from './TableReporte'
 import '/public/css/reportes.css'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
 const ReporteDelDia = () => {
     let ganancias = 0
     const [datosReportados,setDatosReportados]= useState([])
     async function ajusteCaja(){
-        const request = await fetch(Global.url + 'empleado/reporte/general',{
-            method: "GET",
+        const request = await customAxios.get('empleado/reporte/general',{
             headers: {
                 "content-type":"application/json",
                 "Authorization": localStorage.getItem("token")
-            }
+            },
+            withCredentials: true
         })
-        const data = await request.json()
-        if(data.status=="success"){
-            setDatosReportados(data.rows)
+        if(request.data.status=="success"){
+            setDatosReportados(request.data.rows)
         }
     }
     datosReportados.forEach(dato=>{

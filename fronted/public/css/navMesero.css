@@ -1,6 +1,5 @@
 .nav-empleado{
     display: flex;
-    max-width: 1480px;
     width: 100%;
     align-items: center;
     justify-content: space-around;

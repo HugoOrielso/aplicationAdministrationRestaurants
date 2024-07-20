@@ -1,30 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import '/public/css/chart.css'
 import {ResponsiveContainer , Tooltip ,XAxis , BarChart, CartesianGrid , YAxis, Legend , Bar} from 'recharts' 
-import { Global } from '../../helpers/Helpers'
+import { customAxios } from '../../../interceptors/axios.interceptor'
 
 const MaxVentas = () => {
-  const data =[]
+  const data = []
   const [maxVentas ,setMaxVentas]= useState([])
+  const [isThereVentas, setIsThereVentas] = useState(false)
   async function productosMasVendidos(){
-    const request = await fetch(Global.url + 'propietario/productosMasVendidos', {
-      method: "GET",
+    const request = await customAxios.get('propietario/productosMasVendidos', {
       headers: {
         "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials: true
     })
-    const data = await request.json()
-    if(data.status=="success"){
-      setMaxVentas(data.ventas)
+    if(request.data.status=="success"){
+      setMaxVentas(request.data.ventas)
+      setIsThereVentas(true)
     }
   }
-  maxVentas.forEach(element => {
-    data.push(element)
-  });
+  if(isThereVentas){
+    maxVentas.forEach(element => {
+      data.push(element)
+    });
+  }
   useEffect(()=>{
     productosMasVendidos()
-  })
+  },[])
   return (
     <section className='container-max-ventas'>
         <div className='info-max-ventas'>

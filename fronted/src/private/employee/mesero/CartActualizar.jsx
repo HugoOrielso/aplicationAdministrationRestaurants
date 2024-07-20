@@ -1,9 +1,14 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
+/* eslint-disable react/react-in-jsx-scope */
 import '/public/css/cart.css'
 import { useId, useState } from 'react'
 import { CartIcon, RemoveFromCar } from './Icons.jsx'
 import RenderizarImagenes from './RenderizarImagenes.jsx'
 import { Global } from '../../../helpers/Helpers.jsx'
 import { useParams } from 'react-router-dom'
+import { customAxios } from '../../../../interceptors/axios.interceptor.jsx'
+import { toast, Toaster } from 'sonner'
 function CartItem ({ categoria, price, title, quantity, addToCart }) {
   return (
     <li>
@@ -31,19 +36,25 @@ export function CartActualizar ({cart ,clearCart, addToCart}) {
     setObservaciones(e.target.value)
   }
   async function crearPedido(productos){
-    const request = await fetch(Global.url + 'empleado/editarPedido',{
-      method: "PUT",
-      headers: {
-        "content-type":"application/json",
-        "Authorization": localStorage.getItem("token")
-      },
-      body: JSON.stringify({productos ,metodoDePago: metodoDePagoMesa, numeroDeMesa,observaciones})
-    })
-    const data = await request.json()
-    console.log(data);
-    if(data.status == "success"){
-      location.href = "/inicioMesero"
+    try {
+      const request = await customAxios.put('empleado/editarPedido',
+        {productos ,metodoDePago: metodoDePagoMesa, numeroDeMesa,observaciones},
+        {
+        headers: {
+          "content-type":"application/json",
+        },
+        withCredentials: true
+      })
+      if(request.data.status == "success"){
+        toast.info('Pedido actualizado correctamente.')
+        setTimeout(()=>{
+          location.href = "/inicioMesero"
+        },2000)
+      }
+    } catch (error) {
+      toast.error('No se pudo actualizar el pedido.')
     }
+
   }
   const handleMetodoDepago = (e)=>{
     setMetodoDePagoMesa(e.target.value);
@@ -96,9 +107,9 @@ export function CartActualizar ({cart ,clearCart, addToCart}) {
             <button onPointerDown={()=>crearPedido(cart)} className='create-order'>
               Pagar 
             </button>
-
           </div>
       </aside>
+      <Toaster richColors/>
     </>
   )
 }

@@ -1,59 +1,73 @@
 import React, { useEffect, useState } from 'react'
-import { Global } from '../../../helpers/Helpers'
 import io from 'socket.io-client'
 import NavDomiciliarios from './NavDomiciliarios'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
+import { Toaster, toast } from 'sonner'
 
 const MisDomicilios = () => {
     const [misDomiciliosEnCurso,setMisDomiciliosEnCurso]= useState([])
     const [isThereOrders, setIsThereOrders] = useState(false)
+    const pedidosAgrupados = {};
     const socket = io("/")
-    let user = JSON.parse(localStorage.getItem("domiciliario"))
     async function finalizarPedidoDomicilio(id){
-      const request = await fetch(Global.url + 'empleado/domicilios/finalizar' ,{
-        method: "POST",
-        headers: {
-            "content-type":"application/json",
-            "Authorization":localStorage.getItem("token")
-        },
-        body: JSON.stringify({idPedido: id, idUsuario: user.id})
-      })
-      const data = await request.json()
-      if(data.status=="success"){
-        location.reload()
-      }
-    }
-    async function liberarOrden(id){
-      const request = await fetch(Global.url + 'empleado/domicilios/liberar' ,{
-        method: "POST",
-        headers: {
-            "content-type":"application/json",
-            "Authorization":localStorage.getItem("token")
-        },
-        body: JSON.stringify({idPedido: id, idUsuario: user.id})
-      })
-      const data = await request.json()
-      if(data.status=="success"){
-        location.reload()
-      }
-    }
-    async function misPedidosdomicilios (){
-      const request = await fetch(Global.url + 'empleado/domicilios/' + user.id ,{
-          method: "GET",
+      try {
+        const request = await customAxios.post('empleado/domicilios/finalizar',
+          {idPedido: id},
+          {
           headers: {
               "content-type":"application/json",
               "Authorization":localStorage.getItem("token")
-          }
+          },
+          withCredentials: true
+        })
+        if(request.data.status=="success"){
+          toast.success("Pedido finalizado correctamente.")
+          setTimeout(()=>{
+            location.reload()
+          },2000)
+        }
+      } catch (error) {
+        toast.error(error.response.data.message);
+      }
+    }
+    async function liberarOrden(id){
+      try {
+        const request = await customAxios.post('empleado/domicilios/liberar',{idPedido: id} ,{
+          headers: {
+              "content-type":"application/json",
+              "Authorization":localStorage.getItem("token")
+          },
+          withCredentials: true
+        })
+        if(request.data.status=="success"){
+          toast.info("Pedido liberado correctamente.")
+          setTimeout(()=>{
+            location.reload()
+          },2000)
+        }
+      } catch (error) {
+        toast.error(error.response.data.message);
+      }
+    }
+    async function misPedidosdomicilios (){
+      const request = await customAxios.get('empleado/misDomicilios' ,{
+          headers: {
+              "content-type":"application/json",
+              "Authorization":localStorage.getItem("token")
+          },
+          withCredentials: true
       })
-      const data = await request.json()
-      if(data.status=="success"){
-          setMisDomiciliosEnCurso(data.domicilios)
+      if(request.data.status==="success"){
+          setMisDomiciliosEnCurso(request.data.domicilios)
           setIsThereOrders(true)
+      }
+      if(request.data.status ==="vacío"){
+        toast.info("No tienes pedidos en curso")
       }
     }
     useEffect(()=>{
       misPedidosdomicilios()
     },[])
-    const pedidosAgrupados = {};
     if(isThereOrders){
       misDomiciliosEnCurso.forEach((pedido) => {
         const pedidoId = pedido.pedido_id;
@@ -79,6 +93,8 @@ const MisDomicilios = () => {
           subcategoria: pedido.subcategoria,
         });
       });
+      toast.success(`Tienes ${Object.keys(pedidosAgrupados).length} domicilios asignados.`)
+
     }
     socket.on("pedidoCanceladoDomicilio", data=>{
       toast.warning(data)
@@ -118,10 +134,11 @@ const MisDomicilios = () => {
       <header className='header-domiciliario'>
           <NavDomiciliarios/>
       </header>
-      <section>
+      <section style={{padding: '1em'}}>
         {renderPedidos()}
         {!isThereOrders ? <p>Sin pedidos</p>: ""}
       </section>
+      <Toaster richColors/>
     </>
   )
 }

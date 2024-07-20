@@ -2,24 +2,24 @@ import React, { useEffect, useState } from 'react'
 import NavBarOwner from './NavBarOwner'
 import AsideOwner from './AsideOwner'
 import TableInventarioDos from './tables/TableInventarioDos'
+import '/public/css/transitionView.css'
 import Agregar from './Agregar'
-import { Global } from '../../helpers/Helpers'
-import { Toaster , toast } from 'sonner'
+import { Toaster } from 'sonner'
+import { customAxios } from '../../../interceptors/axios.interceptor'
 
 const Inventario = () => {
   const [open,setOpen]=useState(false)
   const [inventario, setInventario] = useState([])
   async function inventarioDb(){
-    const request = await fetch(Global.url + 'propietario/productos', {
-      method: "GET",
+    const request = await customAxios.get('propietario/productos', {
       headers: {
         "content-type":"application/json",
         "Authorization": localStorage.getItem("token")
-      }
+      },
+      withCredentials:true
     })
-    const data = await request.json()
-    if(data.status=="success"){
-      setInventario(data.rows)
+    if(request.data.status=="success"){
+      setInventario(request.data.rows)
     }
   }
   useEffect(()=>{

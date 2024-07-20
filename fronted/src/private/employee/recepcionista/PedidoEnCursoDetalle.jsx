@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import NavRecepcionista from './NavRecepcionista'
 import { useParams } from 'react-router-dom'
-import { Global } from '../../../helpers/Helpers'
 import '/public/css/print.css'
+import '/public/css/transitionView.css'
 import Images from './Images'
 import {Print, Cancel} from '@mui/icons-material';
 import io from 'socket.io-client'
 import { Toaster, toast } from 'sonner'
+import { customAxios } from '../../../../interceptors/axios.interceptor'
 
 const PedidoEnCursoDetalle = () => {
     let total = 0
@@ -20,12 +21,12 @@ const PedidoEnCursoDetalle = () => {
     const [infoAdicional, setInfoAdicional]= useState({})
     const {id} = useParams()
     async function obtenerPedidoEnCurso(){
-        const request = await fetch(Global.url + "empleado/recepcionista/" + id,{
-          method: "GET",
+        const request = await customAxios.get("empleado/recepcionista/" + id,{
           headers: {
             "content-type":"application/json",
             "Authorization": localStorage.getItem("token")
-          }
+          },
+          withCredentials: true
         })
         const data = await request.json()
         if(data.status=="success"){
@@ -36,12 +37,12 @@ const PedidoEnCursoDetalle = () => {
       }
 
       async function cancelarOrden(){
-        const query = await fetch(Global.url + 'empleado/cancelar/' + id,{
-          method: "DELETE",
+        const query = await customAxios.delete('empleado/cancelar/' + id,{
           headers: {
             "content-type":"application/json",
             "Authorization": localStorage.getItem("token")
-          }
+          },
+          withCredentials: true
         })
         const data = await query.json()
         if(data.status=="success"){
@@ -112,7 +113,7 @@ const PedidoEnCursoDetalle = () => {
                   </div>
               </footer>
             </section>
-            <div className='div-botones-acciones'>
+            <div className='div-botones-acciones noPrint'>
               <button className='finalizar-orden' >Finalizar orden</button>
               <button className='imprimir-orden' onPointerDown={()=>{window.print()}}>Imprimir <Print/></button>
               <button className='cancelar-orden' onPointerDown={cancelarOrden}>Cancelar <Cancel/> </button>
